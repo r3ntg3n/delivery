@@ -7,7 +7,9 @@
 // CWebApplication properties can be configured here.
 return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
-	'name'=>'My Web Application',
+	'name'=>'Special Delivery',
+    'sourceLanguage' => 'en',
+    'language' => 'ru',
 
 	// preloading 'log' component
 	'preload'=>array('log'),
@@ -15,7 +17,10 @@ return array(
 	// autoloading model and component classes
 	'import'=>array(
 		'application.models.*',
-		'application.components.*',
+        'application.components.*',
+        'application.modules.user.components.*',
+        'application.modules.user.models.*',
+        'application.vendors.*',
 	),
 
 	'modules'=>array(
@@ -26,21 +31,39 @@ return array(
 			// If removed, Gii defaults to localhost only. Edit carefully to taste.
 			'ipFilters'=>array('127.0.0.1','::1'),
 		),
+        'user' => array(
+            'hash' => 'sha1',
+            'sendActivationMail' => true,
+            'loginNotActiv' => false,
+            'activeAfterRegister' => false,
+            'autoLogin' => true,
+            'registrationUrl' => array('/user/registration'),
+            'recoveryUrl' => array('/user/recovery'),
+            'loginUrl' => array('/user/login'),
+            'returnUrl' => array('/user/profile'),
+            'returnLogoutUrl' => array('/user/login'),
+        ),
 	),
 
 	// application components
 	'components'=>array(
 		'user'=>array(
-			// enable cookie-based authentication
-			'allowAutoLogin'=>true,
+            'class' => 'WebUser',
 		),
+        'request' => array(
+            'enableCookieValidation' => true,
+            'enableCsrfValidation' => true,
+        ),
 		// uncomment the following to enable URLs in path-format
 		'urlManager'=>array(
+            'class' => 'application.components.UrlManager',
 			'urlFormat'=>'path',
 			'rules'=>array(
-				'<controller:\w+>/<id:\d+>'=>'<controller>/view',
-				'<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
-				'<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
+				'<language:[a-z]{2}>/'=>'/',
+				'<language:[a-z]{2}>/<controller:\w+>'=>'<controller>',
+				'<language:[a-z]{2}>/<controller:\w+>/<id:\d+>'=>'<controller>/view',
+				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
+				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/*'=>'<controller>/<action>',
 			),
             'showScriptName' => false,
 		),

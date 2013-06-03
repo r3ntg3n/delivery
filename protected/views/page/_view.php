@@ -13,8 +13,8 @@
 	<?php echo CHtml::encode($data->date_created); ?>
 	<br />
 
-	<b><?php echo CHtml::encode($data->getAttributeLabel('date_update')); ?>:</b>
-	<?php echo CHtml::encode($data->date_update); ?>
+	<b><?php echo CHtml::encode($data->getAttributeLabel('date_updated')); ?>:</b>
+	<?php echo CHtml::encode($data->date_updated); ?>
 	<br />
 
 	<b><?php echo CHtml::encode($data->getAttributeLabel('author')); ?>:</b>

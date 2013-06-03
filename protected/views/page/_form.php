@@ -22,9 +22,9 @@
 	</div>
 
 	<div class="row">
-		<?php echo $form->labelEx($model,'date_update'); ?>
-		<?php echo $form->textField($model,'date_update'); ?>
-		<?php echo $form->error($model,'date_update'); ?>
+		<?php echo $form->labelEx($model,'date_updated'); ?>
+		<?php echo $form->textField($model,'date_updated'); ?>
+		<?php echo $form->error($model,'date_updated'); ?>
 	</div>
 
 	<div class="row">

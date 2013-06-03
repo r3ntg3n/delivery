@@ -39,9 +39,10 @@ class Language extends CActiveRecord
 			array('code, name', 'required'),
 			array('code', 'length', 'max'=>2),
 			array('name', 'length', 'max'=>40),
+            array('default', 'boolean'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, code, name', 'safe', 'on'=>'search'),
+			array('id, code, name, default', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -65,6 +66,7 @@ class Language extends CActiveRecord
 			'id' => 'ID',
 			'code' => 'Code',
 			'name' => 'Name',
+            'default' => 'System\'s default',
 		);
 	}
 
@@ -82,6 +84,7 @@ class Language extends CActiveRecord
 		$criteria->compare('id',$this->id);
 		$criteria->compare('code',$this->code,true);
 		$criteria->compare('name',$this->name,true);
+		$criteria->compare('default',$this->default,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

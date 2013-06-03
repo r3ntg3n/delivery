@@ -9,21 +9,39 @@ return array(
 	// preloading 'log' component
 	'preload'=>array('log'),
 
+    'import' => array(
+        'application.vendors.*',
+    ),
+
+	'modules'=>array(
+        'user' => array(
+            'hash' => 'sha1',
+            'sendActivationMail' => true,
+            'loginNotActiv' => false,
+            'activeAfterRegister' => false,
+            'autoLogin' => true,
+            'registrationUrl' => array('/user/registration'),
+            'recoveryUrl' => array('/user/recovery'),
+            'loginUrl' => array('/user/login'),
+            'returnUrl' => array('/user/profile'),
+            'returnLogoutUrl' => array('/user/login'),
+        ),
+	),
+
 	// application components
 	'components'=>array(
 		'db'=>array(
 			'connectionString' => 'sqlite:'.dirname(__FILE__).'/../data/testdrive.db',
 		),
 		// uncomment the following to use a MySQL database
-		/*
 		'db'=>array(
-			'connectionString' => 'mysql:host=localhost;dbname=testdrive',
+			'connectionString' => 'mysql:host=localhost;dbname=delivery',
 			'emulatePrepare' => true,
-			'username' => 'root',
-			'password' => '',
+			'username' => 'delivery',
+			'password' => 'e3o8f346',
 			'charset' => 'utf8',
+            'tablePrefix' => '',
 		),
-		*/
 		'log'=>array(
 			'class'=>'CLogRouter',
 			'routes'=>array(

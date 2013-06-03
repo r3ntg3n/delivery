@@ -60,9 +60,17 @@ class PageController extends Controller
 	 * Creates a new model.
 	 * If creation is successful, the browser will be redirected to the 'view' page.
 	 */
-	public function actionCreate()
+	public function actionCreate($type = Page::TYPE_PAGE)
 	{
 		$model=new Page;
+
+        $supportedPageTypes = Page::getSupportedPageTypes();
+        if (!isset($supportedPageTypes[$type]))
+        {
+            throw new CHttpException(400, 'Uknown page type');
+        }
+
+        $model->type = (int) $type;
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);

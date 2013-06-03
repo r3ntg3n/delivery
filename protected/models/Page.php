@@ -6,12 +6,22 @@
  * The followings are the available columns in table 'page':
  * @property integer $id
  * @property string $date_created
- * @property string $date_update
+ * @property string $date_updated
  * @property integer $author
  * @property integer $type
  */
-class Page extends CActiveRecord
+class Page extends BaseActiveRecord
 {
+    /**
+     * @const integer record type PAGE
+     */
+    const TYPE_PAGE = 1;
+
+    /**
+     * @const integer record type NEWS
+     */
+    const TYPE_NEWS = 2;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -38,11 +48,11 @@ class Page extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('date_created, date_update, author, type', 'required'),
+			array('date_created, date_updated, author, type', 'required'),
 			array('author, type', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, date_created, date_update, author, type', 'safe', 'on'=>'search'),
+			array('id, date_created, date_updated, author, type', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -65,7 +75,7 @@ class Page extends CActiveRecord
 		return array(
 			'id' => 'ID',
 			'date_created' => 'Date Created',
-			'date_update' => 'Date Update',
+			'date_updated' => 'Date Updated',
 			'author' => 'Author',
 			'type' => 'Type',
 		);
@@ -84,12 +94,26 @@ class Page extends CActiveRecord
 
 		$criteria->compare('id',$this->id);
 		$criteria->compare('date_created',$this->date_created,true);
-		$criteria->compare('date_update',$this->date_update,true);
+		$criteria->compare('date_updated',$this->date_updated,true);
 		$criteria->compare('author',$this->author);
 		$criteria->compare('type',$this->type);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
+
 	}
+
+    /**
+     * Returns supported page types
+     *
+     * @return array page types
+     */
+    public static function getSupportedPageTypes()
+    {
+        return array(
+            self::TYPE_PAGE => Yii::t('page', 'Page'),
+            self::TYPE_NEWS => Yii::t('page', 'News'),
+        );
+    }
 }
