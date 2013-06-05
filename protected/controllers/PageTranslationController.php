@@ -1,6 +1,6 @@
 <?php
 
-class PageController extends Controller
+class PageTranslationController extends Controller
 {
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
@@ -29,11 +29,11 @@ class PageController extends Controller
 		return array(
 			array('allow',  // allow all users to perform 'index' and 'view' actions
 				'actions'=>array('index','view'),
-				'users'=>array('*'),
+				'users'=>array('admin'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update'),
-				'users'=>array('@'),
+				'actions'=>array('json'),
+				'users'=>array('admin'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
 				'actions'=>array('admin','delete'),
@@ -49,18 +49,10 @@ class PageController extends Controller
 	 * Displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
 	 */
-	public function actionView($title)
+	public function actionView($id)
 	{
-		$model = PageTranslation::model()->findByAttributes(array(
-			'lang_id' => Language::getLanguageIdByCode(Yii::app()->language),
-			'sef_title' => $title,
-		));
-		if ($model === null)
-		{
-			throw new CHttpException(404, Yii::t('default', 'Page not found'));
-		}
 		$this->render('view',array(
-			'model'=>$model,
+			'model'=>$this->loadModel($id),
 		));
 	}
 
@@ -70,33 +62,16 @@ class PageController extends Controller
 	 */
 	public function actionCreate()
 	{
-		$model=new Page;
+		$model=new PageTranslation;
 
-		// craete a translation for the page
-		$model->prepareTranslation();
-
-		// here and all the PageController component
-		// we work with page's translation
-		// so all validation and other stuff will relate to it
-		//$this->performAjaxValidation($model);
-		//$this->performAjaxValidation($model->translation);
+		// Uncomment the following line if AJAX validation is needed
+		// $this->performAjaxValidation($model);
 
 		if(isset($_POST['PageTranslation']))
 		{
-			$model->translation->attributes = $_POST['PageTranslation'];
-			if($model->validate() && $model->translation->validate())
-			{
-				// save generic page model without validation
-				// cause we have already validated the page model
-				$model->save(false);
-
-				// set translation's page id
-				$model->translation->page_id = $model->id;
-				// and save translation without running validation
-				$model->translation->save(false);
-
-				$this->redirect(array('view','title'=>$model->translation->sef_title));
-			}
+			$model->attributes=$_POST['PageTranslation'];
+			if($model->save())
+				$this->redirect(array('view','id'=>$model->id));
 		}
 
 		$this->render('create',array(
@@ -114,33 +89,27 @@ class PageController extends Controller
 		$model=$this->loadModel($id);
 
 		// Uncomment the following line if AJAX validation is needed
-		//$this->performAjaxValidation($model);
-		//$this->performAjaxValidation($model->translation);
+		// $this->performAjaxValidation($model);
 
 		if(isset($_POST['PageTranslation']))
 		{
-			/**
-			 * If another page's translation was loaded during update
-			 * try to load appropriate PageTranslation model
-			 */
-			if ($model->translation->lang_id !== $_POST['PageTranslation']['lang_id'])
-			{
-				$model->prepareTranslation($_POST['PageTranslation']['lang_id']);
-				unset($_POST['PageTranslation']['land_id']);
-			}
-
-			$model->translation->attributes = $_POST['PageTranslation'];
-			if($model->translation->save())
-			{
-				$language = Language::model()->findByPk($model->translation->lang_id);
-				$this->redirect(array('view',
-					'title'=>$model->translation->sef_title,
-					'language' => $language->code,
-				));
-			}
+			$model->attributes=$_POST['PageTranslation'];
+			if($model->save())
+				$this->redirect(array('view','id'=>$model->id));
 		}
 
-		$this->render('update',array(
+		if (!Yii::app()->request->isAjaxRequest)
+		{
+			$renderMethod = 'render';
+			$renderFormTag = true;
+		}
+		else
+		{
+			$renderMethod = 'renderPartial';
+			$renderFormTag = false;
+		}
+		$this->$renderMethod('update',array(
+			'renderFormTag' => $renderFormTag,
 			'model'=>$model,
 		));
 	}
@@ -164,7 +133,7 @@ class PageController extends Controller
 	 */
 	public function actionIndex()
 	{
-		$dataProvider=new CActiveDataProvider('Page');
+		$dataProvider=new CActiveDataProvider('PageTranslation');
 		$this->render('index',array(
 			'dataProvider'=>$dataProvider,
 		));
@@ -175,31 +144,58 @@ class PageController extends Controller
 	 */
 	public function actionAdmin()
 	{
-		$model=new Page('search');
+		$model=new PageTranslation('search');
 		$model->unsetAttributes();  // clear any default values
-		if(isset($_GET['Page']))
-			$model->attributes=$_GET['Page'];
+		if(isset($_GET['PageTranslation']))
+			$model->attributes=$_GET['PageTranslation'];
 
 		$this->render('admin',array(
 			'model'=>$model,
 		));
 	}
 
+	public function actionJson($languageId, $pageId)
+	{
+		if (Yii::app()->request->isAjaxRequest)
+		{
+			$model = PageTranslation::model()->findByAttributes(array(
+				'lang_id' => $languageId,
+				'page_id' => $pageId,
+			));
+
+			$res = array(
+				'title' => null,
+				'content' => null,
+				'sef_title' => null,
+
+			);
+
+			if ($model !== null)
+			{
+				array_walk($res, function(&$value, $attr) use (&$model)
+					{
+						$value = $model->$attr;
+					}
+				);
+			}
+			echo CJSON::encode($res);
+		}
+		else
+		{
+			throw new CHttpException(400, 'Bad request');
+		}
+	}
+
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.
 	 * If the data model is not found, an HTTP exception will be raised.
 	 * @param integer $id the ID of the model to be loaded
-	 * @return Page the loaded model
+	 * @return PageTranslation the loaded model
 	 * @throws CHttpException
 	 */
 	public function loadModel($id)
 	{
-		$model=Page::model()->with('translation')->findByPk($id);
-		if ($model->translation === null)
-		{
-			$model->prepareTranslation();
-		}
-
+		$model=PageTranslation::model()->findByPk($id);
 		if($model===null)
 			throw new CHttpException(404,'The requested page does not exist.');
 		return $model;
@@ -207,13 +203,13 @@ class PageController extends Controller
 
 	/**
 	 * Performs the AJAX validation.
-	 * @param Page $model the model to be validated
+	 * @param PageTranslation $model the model to be validated
 	 */
 	protected function performAjaxValidation($model)
 	{
-		if(isset($_POST['ajax']) && $_POST['ajax']==='page-form')
+		if(isset($_POST['ajax']) && $_POST['ajax']==='page-translation-form')
 		{
-			echo CActiveForm::validate($model->translation);
+			echo CActiveForm::validate($model);
 			Yii::app()->end();
 		}
 	}

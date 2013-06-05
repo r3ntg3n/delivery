@@ -13,31 +13,13 @@
 
 	<p class="note">Fields with <span class="required">*</span> are required.</p>
 
-	<?php echo $form->errorSummary($model); ?>
+	<?php echo $form->hiddenField($model, 'type'); ?>
 
-	<div class="row">
-		<?php echo $form->labelEx($model,'date_created'); ?>
-		<?php echo $form->textField($model,'date_created'); ?>
-		<?php echo $form->error($model,'date_created'); ?>
-	</div>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'date_updated'); ?>
-		<?php echo $form->textField($model,'date_updated'); ?>
-		<?php echo $form->error($model,'date_updated'); ?>
-	</div>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'author'); ?>
-		<?php echo $form->textField($model,'author'); ?>
-		<?php echo $form->error($model,'author'); ?>
-	</div>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'type'); ?>
-		<?php echo $form->textField($model,'type'); ?>
-		<?php echo $form->error($model,'type'); ?>
-	</div>
+	<?php $this->renderPartial('application.views.pageTranslation._form', array(
+		'form' => $form,
+		'model' => $model->translation,
+		'parent' => $model,
+	)); ?>
 
 	<div class="row buttons">
 		<?php echo CHtml::submitButton($model->isNewRecord ? 'Create' : 'Save'); ?>

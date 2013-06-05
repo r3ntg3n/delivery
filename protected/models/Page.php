@@ -48,6 +48,7 @@ class Page extends BaseActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
+			array('type', 'default', 'value'=>self::TYPE_PAGE, 'setOnEmpty'=>true),
 			array('date_created, date_updated, author, type', 'required'),
 			array('author, type', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
@@ -63,7 +64,10 @@ class Page extends BaseActiveRecord
 	{
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
+
+		$languageId = Language::getLanguageIdByCode(Yii::app()->language);
 		return array(
+			'translation' => array(self::HAS_ONE, 'PageTranslation', 'page_id', 'on' => "lang_id='{$languageId}'"),
 		);
 	}
 
@@ -102,6 +106,58 @@ class Page extends BaseActiveRecord
 			'criteria'=>$criteria,
 		));
 
+	}
+
+	/**
+	 * Prepares a PageTranslation model for the page
+	 * @param integer language id
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 0.1.1
+	 */
+	public function prepareTranslation($language = null)
+	{
+		$language = ($language === null)
+			? Language::getLanguageIdByCode(Yii::app()->language) 
+			: $language;
+		if ($this->isNewRecord)
+		{
+			$this->buildNewTranslation($language);
+		}
+		else
+		{
+			$this->loadTranslation($language);
+		}
+	}
+
+	/**
+	 * Builds a new page translation for selected language
+	 * @param integer language ID to build translation for
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 0.1.alpha
+	 */
+	private function buildNewTranslation($language)
+	{
+		$this->translation = new PageTranslation;
+		$this->translation->lang_id = $language;
+	}
+
+	/**
+	 * Loads a page translation for seleted language
+	 * @param integer language id
+	 * @author Ievgenii Dytyniuk<i.dytyniuk@gmail.com>
+	 * @version 0.1.alpha
+	 */
+	private function loadTranslation($language)
+	{
+		$this->translation = PageTranslation::model()->findByAttributes(array(
+			'lang_id' => $language,
+			'page_id' => $this->id,
+		));
+		if ($this->translation === null)
+		{
+			$this->buildNewTranslation($language);
+			$this->translation->page_id = $this->id;
+		}
 	}
 
     /**

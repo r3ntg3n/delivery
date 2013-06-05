@@ -64,7 +64,7 @@ CREATE TABLE `page` (
   `author` int(11) NOT NULL,
   `type` int(2) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,7 +73,7 @@ CREATE TABLE `page` (
 
 LOCK TABLES `page` WRITE;
 /*!40000 ALTER TABLE `page` DISABLE KEYS */;
-INSERT INTO `page` VALUES (1,'2013-06-04 00:13:30','2013-06-04 00:18:45',1,1);
+INSERT INTO `page` VALUES (1,'2013-06-04 00:13:30','2013-06-04 00:18:45',1,1),(2,'2013-06-04 23:36:43','2013-06-05 00:14:58',1,1);
 /*!40000 ALTER TABLE `page` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -93,8 +93,9 @@ CREATE TABLE `page_translation` (
   `sef_title` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `sef_title` (`sef_title`),
-  KEY `translation_page` (`page_id`,`lang_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `translation_page` (`page_id`,`lang_id`),
+  KEY `lang_sef_title` (`lang_id`,`sef_title`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,6 +104,7 @@ CREATE TABLE `page_translation` (
 
 LOCK TABLES `page_translation` WRITE;
 /*!40000 ALTER TABLE `page_translation` DISABLE KEYS */;
+INSERT INTO `page_translation` VALUES (1,1,'тест блеать','English content',2,'test-bleat'),(3,2,'Руссо страница','Здесь чего-то по-русски написано',2,'russo-stranitsa');
 /*!40000 ALTER TABLE `page_translation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -223,7 +225,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin','$2a$12$GtXBll6zHP5qtmPHRCjI6O7xF8PoSQy89Zl4PkvWIKfYvAlYjn0KG','r3ntg3n@gmail.com','20e2d222ec93a1e7d2e886b5f75f899aea917d28',1,1,'2013-06-03 20:32:06','2013-06-03 21:42:53');
+INSERT INTO `users` VALUES (1,'admin','$2a$12$GtXBll6zHP5qtmPHRCjI6O7xF8PoSQy89Zl4PkvWIKfYvAlYjn0KG','r3ntg3n@gmail.com','20e2d222ec93a1e7d2e886b5f75f899aea917d28',1,1,'2013-06-03 20:32:06','2013-06-04 16:59:32');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -236,4 +238,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-06-04  1:02:41
+-- Dump completed on 2013-06-06  1:10:25

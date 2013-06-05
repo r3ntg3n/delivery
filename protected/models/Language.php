@@ -90,4 +90,30 @@ class Language extends CActiveRecord
 			'criteria'=>$criteria,
 		));
 	}
+
+	/**
+	 * Returns language ID from two leters code
+	 * @param string language two letter code
+	 * @return integer language ID
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 0.1.alpha
+	 */
+	public static function getLanguageIdByCode($code)
+	{
+		$res = self::model()
+			->findByAttributes(array('code'=>$code))
+			->getAttributes(array('id'));
+		return $res['id'];
+	}
+
+	/**
+	 * Returns default language model
+	 * @return object Language model instance
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 0.1.alpha
+	 */
+	public static function getDefaultLanguage()
+	{
+		return self::model()->findByAttributes(array('default'=>1));
+	}
 }

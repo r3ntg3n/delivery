@@ -64,6 +64,7 @@ return array(
 				'<language:[a-z]{2}>/<controller:\w+>/<id:\d+>'=>'<controller>/view',
 				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
 				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/*'=>'<controller>/<action>',
+				'<language:[a-z]{2}>/<title:.*?>'=>'page/view',
 			),
             'showScriptName' => false,
 		),
@@ -80,6 +81,7 @@ return array(
 			'password' => 'e3o8f346',
 			'charset' => 'utf8',
             'tablePrefix' => '',
+			'enableProfiling' => true,
 		),
 		'errorHandler'=>array(
 			// use 'site/error' action to display errors
@@ -96,8 +98,9 @@ return array(
 				/*
 				array(
 					'class'=>'CWebLogRoute',
+					'levels' => 'profile',
 				),
-				*/
+				 */
 			),
 		),
 	),
