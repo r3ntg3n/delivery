@@ -54,7 +54,6 @@ class Controller extends CController
 			{
 				Yii::app()->language = Yii::app()->user->getState('language');
 			}
-
 			// or user's cookies
 			else if (isset(Yii::app()->request->cookies['language']->value))
 			{
@@ -72,9 +71,8 @@ class Controller extends CController
 			$route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
 			$routeParams = explode('/', $route);
 			$urlParams = array();
-			if (!$this->isControllerExists($routeParams[0]))
+			if (!$this->isControllerExists($routeParams[0]) && !empty($route))
 			{
-				$urlParams['language'] = Yii::app()->language;
 				$urlParams['title'] = $route;
 				$route = 'page/view';
 			}
