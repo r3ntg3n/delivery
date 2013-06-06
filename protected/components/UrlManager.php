@@ -14,7 +14,7 @@ class UrlManager extends CUrlManager
             {
                 Yii::app()->language = Yii::app()->request->cookies['language']->value;
             }
-            $params['language'] = Yii::app()->language;
+			$params['language'] = Yii::app()->language;
         }
 
         return parent::createUrl($route, $params, $ampersand);

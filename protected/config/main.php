@@ -58,13 +58,14 @@ return array(
 		'urlManager'=>array(
             'class' => 'application.components.UrlManager',
 			'urlFormat'=>'path',
+			'appendParams' => true,
 			'rules'=>array(
 				'<language:[a-z]{2}>/'=>'/',
 				'<language:[a-z]{2}>/<controller:\w+>'=>'<controller>',
 				'<language:[a-z]{2}>/<controller:\w+>/<id:\d+>'=>'<controller>/view',
 				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
 				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/*'=>'<controller>/<action>',
-				'<language:[a-z]{2}>/<title:.*?>'=>'page/view',
+			    '<language:[a-z]{2}>/<title:.*?>/*'=>'page/view',
 			),
             'showScriptName' => false,
 		),

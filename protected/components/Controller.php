@@ -58,7 +58,7 @@ class Controller extends CController
 			// or user's cookies
 			else if (isset(Yii::app()->request->cookies['language']->value))
 			{
-				Yii::app()->language = Yii::app()->request->cookie['language']->value;
+				Yii::app()->language = Yii::app()->request->cookies['language']->value;
 			}
 
 			// or use application's default language if none of above were founb
@@ -70,12 +70,32 @@ class Controller extends CController
 
 			// build a url with language code
 			$route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
-			$url = $this->createUrl('/'.$route, array(
-				'language'=>Yii::app()->language
-			));
+			$routeParams = explode('/', $route);
+			$urlParams = array();
+			if (!$this->isControllerExists($routeParams[0]))
+			{
+				$urlParams['language'] = Yii::app()->language;
+				$urlParams['title'] = $route;
+				$route = 'page/view';
+			}
+			$url = $this->createUrl('/'.$route, $urlParams);
 			// and redirect user to appropriate page
 			$this->redirect($url);
 		}
     }
+
+	/**
+	 * Checks is controller exist
+	 * @param string controller ID
+	 * @return boolean
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 0.1.alpha
+	 */
+	private function isControllerExists($id)
+	{
+		$controller = ucfirst($id);
+		$controllerPath = ($this->module==null) ? Yii::app()->controllerPath : $this->module->controllerPath;
+		return file_exists($controllerPath.DIRECTORY_SEPARATOR.$controller.'Controller.php');
+	}
 
 }

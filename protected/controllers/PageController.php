@@ -164,7 +164,11 @@ class PageController extends Controller
 	 */
 	public function actionIndex()
 	{
-		$dataProvider=new CActiveDataProvider('Page');
+		$dataProvider=new CActiveDataProvider('Page', array(
+			'criteria' => array(
+				'with' => array('translation'),
+			),
+		));
 		$this->render('index',array(
 			'dataProvider'=>$dataProvider,
 		));
