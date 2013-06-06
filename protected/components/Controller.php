@@ -24,6 +24,7 @@ class Controller extends CController
     public function __construct($id, $module = null)
     {
         parent::__construct($id, $module);
+
         if (isset($_POST['language']))
         {
             $lang = $_POST['language'];
@@ -31,24 +32,50 @@ class Controller extends CController
             $this->redirect($mulriLangReturnUrl);
         }
 
+		// if language code was passed through the URI
         if (isset($_GET['language']))
         {
-            Yii::app()->language = $_GET['language'];
-            Yii::app()->user->setState('language', $_GET['language']);
-            $cookie = new CHttpCookie('language', $_GET['language']);
-            $cookie->expire = time() + (60*60*24*14);
-            Yii::app()->request->cookies['language'] = $cookie;
+			// set it as application's lang
+			Yii::app()->language = $_GET['language'];
+
+			// and store it to user's session
+			Yii::app()->user->setState('language', $_GET['language']);
+
+			// and store it to user's cookies
+			$cookie = new CHttpCookie('language', $_GET['language']);
+			$cookie->expire = time() + (60*60*24*14);
+			Yii::app()->request->cookies['language'] = $cookie;
         }
-        else if (Yii::app()->user->hasState('language'))
-        {
-            Yii::app()->language = Yii::app()->user->getState('language');
-            $this->redirect($this->createUrl('/'));
-        }
-        else if (isset(Yii::app()->request->cookies['language']->value))
-        {
-            Yii::app()->language = Yii::app()->request->cookie['language']->value;
-            $this->redirect($this->createUrl('/'));
-        }
+		// otherwise we need to get lang code from other places
+		else 
+		{
+			// maybe from user's session
+			if (Yii::app()->user->hasState('language'))
+			{
+				Yii::app()->language = Yii::app()->user->getState('language');
+			}
+
+			// or user's cookies
+			else if (isset(Yii::app()->request->cookies['language']->value))
+			{
+				Yii::app()->language = Yii::app()->request->cookie['language']->value;
+			}
+
+			// or use application's default language if none of above were founb
+			else
+			{
+				$language = Language::getDefaultLanguage();
+				Yii::app()->language = $language->code;
+			}
+
+			// build a url with language code
+			$route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
+			$url = $this->createUrl('/'.$route, array(
+				'language'=>Yii::app()->language
+			));
+			// and redirect user to appropriate page
+			$this->redirect($url);
+		}
     }
 
 }
