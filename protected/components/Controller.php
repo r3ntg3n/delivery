@@ -69,31 +69,11 @@ class Controller extends CController
 
 			// build a url with language code
 			$route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
-			$routeParams = explode('/', $route);
-			$urlParams = array();
-			if (!$this->isControllerExists($routeParams[0]) && !empty($route))
-			{
-				$urlParams['title'] = $route;
-				$route = 'page/view';
-			}
-			$url = $this->createUrl('/'.$route, $urlParams);
+			$url = $this->createUrl('/'.$route);
 			// and redirect user to appropriate page
 			$this->redirect($url);
 		}
     }
 
-	/**
-	 * Checks is controller exist
-	 * @param string controller ID
-	 * @return boolean
-	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
-	 * @version 0.1.alpha
-	 */
-	private function isControllerExists($id)
-	{
-		$controller = ucfirst($id);
-		$controllerPath = ($this->module==null) ? Yii::app()->controllerPath : $this->module->controllerPath;
-		return file_exists($controllerPath.DIRECTORY_SEPARATOR.$controller.'Controller.php');
-	}
 
 }

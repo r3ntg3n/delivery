@@ -60,12 +60,21 @@ return array(
 			'urlFormat'=>'path',
 			'appendParams' => true,
 			'rules'=>array(
-				'<language:[a-z]{2}>/'=>'/',
+				'<language:[a-z]{2}>'=>'/',
+
+			    '<language:[a-z]{2}>/<title:[a-z1-9-]+?>/'=>'page/view',
+
+				'<language:[a-z]{2}>/<module:\w+>/<controller:\w+>/<id:\d+>'=>'<module>/<controller>/view',
+				'<language:[a-z]{2}>/<module:\w+>/<controller:\w+>/<action:\w+>/<id:\d+>'=>'<module>/<controller>/<action>',
+				'<language:[a-z]{2}>/<module:\w+>/<controller:\w+>/<action:\w+>'=>'<module>/<controller>/<action>',
+
+
 				'<language:[a-z]{2}>/<controller:\w+>'=>'<controller>',
 				'<language:[a-z]{2}>/<controller:\w+>/<id:\d+>'=>'<controller>/view',
 				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
-				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>/*'=>'<controller>/<action>',
-			    '<language:[a-z]{2}>/<title:.*?>/*'=>'page/view',
+				'<language:[a-z]{2}>/<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
+				'<language:[a-z]{2}>/<module:\w+>/<controller:\w+>'=>'<module>/<controller>/index',
+
 			),
             'showScriptName' => false,
 		),
