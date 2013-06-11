@@ -172,4 +172,41 @@ class Page extends BaseActiveRecord
             self::TYPE_NEWS => Yii::t('page', 'News'),
         );
     }
+
+	/**
+	 * Override parent method to fill findAll and similat methods results with proper models
+	 *
+	 * @param array $attributes
+	 * @return Page object
+	 *
+	 * @author Ievgenii Dytyniuk<i.dytyniuk@gmail.com>
+	 * @version 1.0.0.1
+	 */
+	protected function instantiate($attributes)
+	{
+		switch ($attributes['type'])
+		{
+		case self::TYPE_NEWS:
+			$class = 'News';
+			break;
+		default:
+			$class = get_class($this);
+		}
+		$model = new $class(null);
+		return $model;
+	}
+
+	/**
+	 * Set defaultScope query params
+	 * to select only records with type=self::TYPE_PAGE
+	 *
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 1.0.0.1
+	 */
+	public function defaultScope()
+	{
+		return array(
+			'condition' => 't.type='.self::TYPE_PAGE,
+		);
+	}
 }

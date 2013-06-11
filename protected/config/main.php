@@ -63,6 +63,7 @@ return array(
 				'<language:[a-z]{2}>'=>'/',
 
 			    '<language:[a-z]{2}>/<title:[a-z1-9-]+?>/'=>'page/view',
+			    '<language:[a-z]{2}>/news/<title:[a-z1-9-]+?>/'=>'news/view',
 
 				'<language:[a-z]{2}>/<module:\w+>/<controller:\w+>/<id:\d+>'=>'<module>/<controller>/view',
 				'<language:[a-z]{2}>/<module:\w+>/<controller:\w+>/<action:\w+>/<id:\d+>'=>'<module>/<controller>/<action>',

@@ -1,6 +1,6 @@
 <?php
 
-class PageController extends PageBaseController
+class NewsController extends PageBaseController
 {
 	/**
 	 * @var string the default layout for the views. Defaults to '//layouts/column2', meaning
@@ -64,11 +64,7 @@ class PageController extends PageBaseController
 	 */
 	public function actionIndex()
 	{
-		$dataProvider=new CActiveDataProvider('Page', array(
-			'criteria' => array(
-				'with' => array('translation'),
-			),
-		));
+		$dataProvider=new CActiveDataProvider('News');
 		$this->render('index',array(
 			'dataProvider'=>$dataProvider,
 		));
@@ -79,10 +75,10 @@ class PageController extends PageBaseController
 	 */
 	public function actionAdmin()
 	{
-		$model=new Page('search');
+		$model=new News('search');
 		$model->unsetAttributes();  // clear any default values
-		if(isset($_GET['Page']))
-			$model->attributes=$_GET['Page'];
+		if(isset($_GET['News']))
+			$model->attributes=$_GET['News'];
 
 		$this->render('admin',array(
 			'model'=>$model,
@@ -91,13 +87,13 @@ class PageController extends PageBaseController
 
 	/**
 	 * Performs the AJAX validation.
-	 * @param Page $model the model to be validated
+	 * @param News $model the model to be validated
 	 */
 	protected function performAjaxValidation($model)
 	{
-		if(isset($_POST['ajax']) && $_POST['ajax']==='page-form')
+		if(isset($_POST['ajax']) && $_POST['ajax']==='news-form')
 		{
-			echo CActiveForm::validate($model->translation);
+			echo CActiveForm::validate($model);
 			Yii::app()->end();
 		}
 	}

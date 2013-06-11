@@ -90,8 +90,13 @@ class UrlManager extends CUrlManager
 	 */
 	private function isPageRoute($route)
 	{
+		$route = rtrim(ltrim($route, '/'), '/');
 		$route = explode('/', $route);
-		if (!$this->controllerExists($route[0]) && !$this->moduleExists($route[0]))
+		if (
+			!$this->controllerExists($route[0]) &&
+			!$this->moduleExists($route[0]) &&
+			($route[0] !== 'gii')
+		)
 		{
 			return true;
 		}
