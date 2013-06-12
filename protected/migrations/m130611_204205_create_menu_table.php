@@ -9,13 +9,12 @@ class m130611_204205_create_menu_table extends CDbMigration
 			'name' => 'VARCHAR(45) NOT NULL UNIQUE',
 			'active' => 'BOOLEAN',
 			'description' => 'VARCHAR(255)',
-		));
+		), 'CHARSET=UTF8');
 	}
 
 	public function down()
 	{
 		$this->dropTable('{{menu}}');
-		return false;
 	}
 
 	/*
