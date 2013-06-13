@@ -18,6 +18,11 @@
 class MenuItem extends CActiveRecord
 {
 	/**
+	 * @const maximum depth for adding nested menu items
+	 * @todo move this to overall site's config read from database
+	 */
+	const MAX_PARENTING_DEPTH = 6;
+	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
 	 * @return MenuItem the static model class
@@ -109,5 +114,45 @@ class MenuItem extends CActiveRecord
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
+	}
+
+	/**
+	 * Checks is there are any items assigned to menu
+	 * @param integer Menu model id
+	 * @return boolean
+	 */
+	public static function parentsExist($menuId)
+	{
+		$parentsCount = self::model()->countByAttributes(array(
+			'menu_id' => (int)$menuId,
+		));
+		return ($parentsCount) ? true : false;
+	}
+
+	/**
+	 * Builds a list data for parent selection list
+	 * @param integer menu id
+	 * @return CListData for dropDownList widget
+	 */
+	public static function getPossibleParents($menuId)
+	{
+		$models = self::model()->findAllByAttributes(
+			array(
+				'menu_id'=>$menuId
+			),
+			'level<=:maxDepth',
+			array(
+				':maxDepth'=>self::MAX_PARENTING_DEPTH
+			)
+		);
+
+		return CHtml::listData($models, 'id', function($item) {
+			$levelShift = str_repeat('-', (
+				($item->level > 1)
+				? $item->level+2
+				: $item->level
+			));
+			return CHtml::encode("|{$levelShift} {$item->caption}");
+		});
 	}
 }

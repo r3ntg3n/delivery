@@ -17,8 +17,8 @@ class m130611_204702_create_menu_items_table extends CDbMigration
 			'access_level' => 'INT(1) NOT NULL DEFAULT 0',
 		), 'CHARSET=UTF8');
 
-		$this->createIndex('menu_lang_level_active_index', '{{menu_item}}', 'menu_id, lang_id, level, active');
-		$this->createIndex('parent_lang_level_active', '{{menu_item}}', 'parent_id, lang_id, level, active');
+		$this->createIndex('menu_lang_active_level_index', '{{menu_item}}', 'menu_id, lang_id, active, level');
+		$this->createIndex('parent_lang_active_level_index', '{{menu_item}}', 'parent_id, lang_id, active, level');
 		
 	}
 

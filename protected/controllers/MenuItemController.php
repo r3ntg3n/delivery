@@ -9,6 +9,16 @@ class MenuItemController extends Controller
 	public $layout='//layouts/column2';
 
 	/**
+	 * @var object associated Menu model
+	 */
+	private $_menuModel = null;
+
+	/**
+	 * @var object parent MenuItem  model
+	 */
+	private $_parentModel = null;
+
+	/**
 	 * @return array action filters
 	 */
 	public function filters()
@@ -16,6 +26,7 @@ class MenuItemController extends Controller
 		return array(
 			'accessControl', // perform access control for CRUD operations
 			'postOnly + delete', // we only allow deletion via POST request
+			'relatedContext + create, admin, index',
 		);
 	}
 
@@ -53,6 +64,7 @@ class MenuItemController extends Controller
 	{
 		$this->render('view',array(
 			'model'=>$this->loadModel($id),
+			'menu' =>$this->_menuModel,
 		));
 	}
 
@@ -63,20 +75,8 @@ class MenuItemController extends Controller
 	public function actionCreate()
 	{
 		$model=new MenuItem;
-		// @todo add menu context access filter to ensure we always have menu Id
-		// when working with menu items
-		$model->menu_id = Yii::app()->request->getParam('menu');
-		$model->lang_id = Language::getLanguageIdByCode(Yii::app()->language);
-
-		$parentId = Yii::app()->request->getParam('parent');
-		$model->parent_id =  ($parentId !== null) ? $parentId : 0;
-
-		if ($parentId !== null)
-		{
-			$parentItem = MenuItem::model()->findByPk($parentId);
-			$model->level =  ($parentItem !== null) ? $parentItem->level++ : 1;
-			$model->path = ($parentItem !== null) ? $parentItem->path : '';
-		}
+		$this->prepareModel($model);
+		$parentItemId = $model->parent_id;
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -84,8 +84,18 @@ class MenuItemController extends Controller
 		if(isset($_POST['MenuItem']))
 		{
 			$model->attributes=$_POST['MenuItem'];
+			if ($parentItemId && ($model->parent_id !== $parentItemId))
+			{
+				$parent = MenuItem::model()->findByPk($model->parent_id);
+				$model->level = ++$parent->level;
+				$model->path = $parent->path;
+			}
 			if($model->save())
+			{
+				$model->path .= (($model->level > 1) ? '/' : '') . $model->id;
+				$model->save();
 				$this->redirect(array('view','id'=>$model->id));
+			}
 		}
 
 		$this->render('create',array(
@@ -101,6 +111,7 @@ class MenuItemController extends Controller
 	public function actionUpdate($id)
 	{
 		$model=$this->loadModel($id);
+		$parentItemId = $model->parent_id;
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -108,6 +119,12 @@ class MenuItemController extends Controller
 		if(isset($_POST['MenuItem']))
 		{
 			$model->attributes=$_POST['MenuItem'];
+			if ($model->parent_id !== $parentItemId)
+			{
+				$parent = MenuItem::model()->findByPk($model->parent_id);
+				$model->path = "{$parent->path}/{$model->id}";
+				$model->level = ++$parent->level;
+			}
 			if($model->save())
 				$this->redirect(array('view','id'=>$model->id));
 		}
@@ -136,9 +153,14 @@ class MenuItemController extends Controller
 	 */
 	public function actionIndex()
 	{
-		$dataProvider=new CActiveDataProvider('MenuItem');
+		$dataProvider=new CActiveDataProvider('MenuItem', array(
+			'criteria' => array(
+				'condition' => "menu_id={$this->_menuModel->id}",
+			),
+		));
 		$this->render('index',array(
 			'dataProvider'=>$dataProvider,
+			'menu' => $this->_menuModel,
 		));
 	}
 
@@ -184,4 +206,91 @@ class MenuItemController extends Controller
 			Yii::app()->end();
 		}
 	}
+
+	/**
+	 * Sets basic item properties in place
+	 * @params MenuItem model instance
+	 * @return void
+	 */
+	private function prepareModel(MenuItem &$model)
+	{
+		$model->menu_id = $this->_menuModel->id;
+		$model->lang_id = Language::getLanguageIdByCode(Yii::app()->language);
+		$model->parent_id =  ($this->_parentModel !== null) ? $this->_parentModel->id : 0;
+		$model->level =  ($this->_parentModel !== null) ? ++$this->_parentModel->level : 1;
+		$model->path = ($this->_parentModel !== null) ? $this->_parentModel->path : '';
+	}
+
+	/**
+	 * Additional filter to apply to create, update and other actions
+	 * @param object filter chain
+	 */
+	public function filterRelatedContext($filterChain)
+	{
+		$this->createMenuContext();
+		$this->createParentItemContext();
+		$filterChain->run();
+	}
+
+	/**
+	 * Create Menu context to provide existing Model model for items
+	 * @return void
+	 */
+	protected function createMenuContext()
+	{
+		$id = Yii::app()->request->getParam('menu');
+
+		$context = new stdClass;
+		$context->property = &$this->_menuModel;
+		$context->className = 'Menu';
+		$context->id = $id;
+		$context->exceptionOnNull = true;
+
+		$this->createContext($context);
+	}
+
+	/**
+	 * Create parentItem context if any parent id was specified
+	 * @return void
+	 */
+	protected function createParentItemContext()
+	{
+		$id = Yii::app()->request->getParam('parent');
+
+		$context = new stdClass;
+		$context->property = &$this->_parentModel;
+		$context->className = 'MenuItem';
+		$context->id = $id;
+		$context->exceptionOnNull = false;
+
+		$this->createContext($context);
+	}
+
+	/**
+	 * Creates context 
+	 * @param stdClass object containing context params
+	 * @return void
+	 */
+	protected function createContext(stdClass &$context)
+	{
+		if (empty($context->property))
+		{
+			$this->loadContext($context);
+		}
+		if (!empty($context->exceptionOnNull) && ($context->property === null))
+		{
+			throw new CHttpException(404, 'The requested ' . strtolower($context->className) . ' does not exist');
+		}
+	}
+
+	/**
+	 * Loads context object
+	 * @param stdClass object with context properties
+	 */
+	protected function loadContext(stdClass &$context)
+	{
+		$contextClass = $context->className;
+		$context->property = $contextClass::model()->findByPk($context->id);
+	}
+
 }

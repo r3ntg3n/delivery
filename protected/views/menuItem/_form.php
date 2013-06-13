@@ -16,12 +16,6 @@
 	<?php echo $form->errorSummary($model); ?>
 
 	<div class="row">
-		<?php echo $form->labelEx($model,'menu_id'); ?>
-		<?php echo $form->textField($model,'menu_id'); ?>
-		<?php echo $form->error($model,'menu_id'); ?>
-	</div>
-
-	<div class="row">
 		<?php echo $form->labelEx($model,'lang_id'); ?>
 		<?php echo $form->dropDownList(
 			$model,
@@ -49,23 +43,22 @@
 		<?php echo $form->error($model,'active'); ?>
 	</div>
 
+<?php
+    if (MenuItem::parentsExist($model->menu_id)):
+?>
 	<div class="row">
 		<?php echo $form->labelEx($model,'parent_id'); ?>
-		<?php echo $form->textField($model,'parent_id'); ?>
+		<?php echo $form->dropDownList($model,'parent_id',
+			MenuItem::getPossibleParents($model->menu_id),
+			array(
+				'empty' => Yii::t('menuitem', 'Select a parent item'),
+			)
+		); ?>
 		<?php echo $form->error($model,'parent_id'); ?>
 	</div>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'level'); ?>
-		<?php echo $form->textField($model,'level'); ?>
-		<?php echo $form->error($model,'level'); ?>
-	</div>
-
-	<div class="row">
-		<?php echo $form->labelEx($model,'path'); ?>
-		<?php echo $form->textField($model,'path',array('size'=>60,'maxlength'=>255)); ?>
-		<?php echo $form->error($model,'path'); ?>
-	</div>
+<?php
+	endif;
+?>
 
 	<div class="row">
 		<?php echo $form->labelEx($model,'access_level'); ?>
