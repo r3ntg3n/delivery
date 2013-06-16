@@ -32,7 +32,7 @@ class PageTranslationController extends Controller
 				'users'=>array('admin'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('json'),
+				'actions'=>array('json', 'linkOptions'),
 				'users'=>array('admin'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -183,6 +183,15 @@ class PageTranslationController extends Controller
 		else
 		{
 			throw new CHttpException(400, 'Bad request');
+		}
+	}
+
+	public function actionLinkOptions($langId)
+	{
+		$pages = PageTranslation::getSelectOptions($langId);
+		foreach ($pages as $key => $value)
+		{
+			echo CHtml::tag('option', array('value'=>$key), $value, true) . PHP_EOL;
 		}
 	}
 

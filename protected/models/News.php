@@ -31,7 +31,7 @@ class News extends Page
 	public function defaultScope()
 	{
 		return array(
-			'condition' => 't.type='.Page::TYPE_NEWS,
+			'condition' => 'type='.Page::TYPE_NEWS,
 		);
 	}
 

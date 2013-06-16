@@ -60,11 +60,12 @@ abstract class PageBaseController extends Controller
 	 */
 	public function actionView($title)
 	{
-		$model = PageTranslation::model()->findByAttributes(array(
+		$pageType = Yii::app()->controller->id;
+		$model = PageTranslation::model()->with($pageType)->findByAttributes(array(
 			'lang_id' => Language::getLanguageIdByCode(Yii::app()->language),
 			'sef_title' => $title,
 		));
-		if ($model === null)
+		if (($model === null) || ($model->$pageType === null))
 		{
 			throw new CHttpException(404, Yii::t('default', 'Page not found'));
 		}

@@ -206,7 +206,7 @@ class Page extends BaseActiveRecord
 	public function defaultScope()
 	{
 		return array(
-			'condition' => 't.type='.self::TYPE_PAGE,
+			'condition' => 'type='.self::TYPE_PAGE,
 		);
 	}
 }

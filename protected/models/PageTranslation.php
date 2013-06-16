@@ -63,7 +63,8 @@ class PageTranslation extends ContentActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'page' => array(self::BELONGS_TO, 'Page', 'page_id'),
+			'page' => array(self::BELONGS_TO, 'Page', 'page_id',),
+			'news' => array(self::BELONGS_TO, 'News', 'page_id',),
 		);
 	}
 
@@ -103,5 +104,33 @@ class PageTranslation extends ContentActiveRecord
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
+	}
+
+	public static function getSelectOptions($language = null, $pageType = Page::TYPE_PAGE)
+	{
+		$language = ($language === null) ? Language::getLanguageIdByCode(Yii::app()->language) : $language;
+		$languageCode = Language::model()->findByPk($language)->code;
+
+		$pages = new CActiveDataProvider('PageTranslation', array(
+			'criteria' => array(
+				'with'=> array(
+					'page' => array(
+						'condition' => 'type='.$pageType,
+					),
+				),
+				'together' => true,
+				'condition' => 'lang_id=:lang_id',
+				'params' => array(
+					':lang_id' => $language,
+				),
+			),
+		));
+		return CHtml::listData($pages->getData(), function($page) use ($languageCode)
+		{
+			return Yii::app()->createUrl('page/view', array(
+				'title' => $page->sef_title,
+				'language' => $languageCode,
+			));
+		}, 'title');
 	}
 }

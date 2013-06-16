@@ -20,7 +20,18 @@
 		<?php echo $form->dropDownList(
 			$model,
 			'lang_id',
-			CHtml::listData(Language::model()->findAll(), 'id', 'name')
+			CHtml::listData(Language::model()->findAll(), 'id', 'name'),
+			array(
+				'empty' => 'Select a language',
+				'ajax' => array(
+					'data' => array(
+						'langId' => 'js:this.value'
+					),
+					'type' => 'GET',
+					'url' => $this->createUrl('pageTranslation/linkOptions'),
+					'update' => 'select#MenuItem_link',
+				),
+			)
 		); ?>
 		<?php echo $form->error($model,'lang_id'); ?>
 	</div>
@@ -35,6 +46,17 @@
 		<?php echo $form->labelEx($model,'link'); ?>
 		<?php echo $form->textField($model,'link',array('size'=>60,'maxlength'=>500)); ?>
 		<?php echo $form->error($model,'link'); ?>
+		Or select a page:
+		<?php echo $form->dropDownList($model, 'link',
+			PageTranslation::getSelectOptions(
+				((!$model->isNewRecord)
+				? $model->lang_id
+				: null)
+			),
+			array(
+				'empty' => Yii::t('default', 'Select a page'),
+			)
+		); ?>
 	</div>
 
 	<div class="row">
