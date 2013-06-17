@@ -19,14 +19,21 @@ $this->menu=array(
 
 <h1><?php echo $model->name; ?> Menu</h1>
 
-<?php $this->widget('zii.widgets.CDetailView', array(
-	'data'=>$model,
-	'attributes'=>array(
-		'name',
-		array(
-			'name' => 'active',
-			'value' => ($model->active) ? Yii::t('yii', 'Yes') : Yii::t('yii', 'No'),
+<div class="append-bottom">
+	<?php $this->widget('zii.widgets.CDetailView', array(
+		'data'=>$model,
+		'attributes'=>array(
+			'name',
+			array(
+				'name' => 'active',
+				'value' => ($model->active) ? Yii::t('yii', 'Yes') : Yii::t('yii', 'No'),
+			),
+			'description',
 		),
-		'description',
-	),
+	)); ?>
+</div>
+
+<h3>Menu Items</h3>
+<?php $this->widget('CTreeView', array(
+	'data' => $treeData,
 )); ?>

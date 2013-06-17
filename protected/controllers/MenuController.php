@@ -51,8 +51,16 @@ class MenuController extends Controller
 	 */
 	public function actionView($id)
 	{
+		$treeParams = new stdClass;
+		$treeParams->menuId = $id;
+		$treeParams->textNodeCallback = function($item)
+		{
+			return CHtml::link($item->caption, Yii::app()->createUrl('menuItem/update', array('id'=>$item->id)));
+		};
+
 		$this->render('view',array(
 			'model'=>$this->loadModel($id),
+			'treeData' => MenuItem::getMenuTree($treeParams),
 		));
 	}
 

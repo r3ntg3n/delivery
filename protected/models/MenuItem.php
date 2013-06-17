@@ -22,6 +22,12 @@ class MenuItem extends CActiveRecord
 	 * @todo move this to overall site's config read from database
 	 */
 	const MAX_PARENTING_DEPTH = 6;
+
+	/**
+	 * @const top items level 
+	 */
+	const TOP_ITEMS_LEVEL = 1;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -131,6 +137,7 @@ class MenuItem extends CActiveRecord
 
 	/**
 	 * Builds a list data for parent selection list
+	 * @static
 	 * @param integer menu id
 	 * @return CListData for dropDownList widget
 	 */
@@ -148,11 +155,93 @@ class MenuItem extends CActiveRecord
 
 		return CHtml::listData($models, 'id', function($item) {
 			$levelShift = str_repeat('-', (
-				($item->level > 1)
+				($item->level > MenuItem::TOP_ITEMS_LEVEL)
 				? $item->level+2
 				: $item->level
 			));
 			return CHtml::encode("|{$levelShift} {$item->caption}");
 		});
+	}
+
+	/**
+	 * Builds an items tree for specified menu
+	 * @static
+	 * @param stdClass params for items tree
+	 * @return array menu items tree
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 1.0.0.1
+	 */
+	public static function getMenuTree(stdClass $params)
+	{
+		$menuId = $params->menuId;
+		$itemTextNodeCallback = property_exists($params, 'textNodeCallback') ? $params->textNodeCallback : null;
+
+		$items = new CActiveDataProvider(__CLASS__, array(
+			'criteria' => array(
+				'order'=>'path ASC',
+				'condition' => 'menu_id =:menu_id && level=:level',
+				'params' => array(
+					':menu_id' => $menuId,
+					':level' => MenuItem::TOP_ITEMS_LEVEL,
+				),
+			),
+		));
+		$tree = self::getTreeFromProvider($items, $itemTextNodeCallback);
+		return $tree;
+	}
+
+	/**
+	 * Builds an items tree from CActiveDataProvider instance
+	 * @static
+	 * @param CActiveDataProvider object
+	 * @param callable a callback to generate text node
+	 * @return array menu items tree from provider's data
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 1.0.0.1
+	 */
+	private static function getTreeFromProvider(CActiveDataProvider $items, $itemTextNodeCallback = null)
+	{
+		$tree = array();
+
+		foreach($items->getData() as $item)
+		{
+			$tree[] = array(
+				'id' => "MenuItem_{$item->id}",
+				'text' => ($itemTextNodeCallback !== null) ? call_user_func($itemTextNodeCallback, $item) : $item->caption,
+				'children' => self::getChildren($item->id, $itemTextNodeCallback),
+			);
+		}
+		return $tree;
+	}
+
+	/**
+	 * Returns child items for specified element
+	 * @static
+	 * @param integet root element's Id
+	 * @param callable a callback to generate text node
+	 * @return array of children or null if nothing found
+	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
+	 * @version 1.0.0.1
+	 */
+	public static function getChildren($rootElementId, $itemTextNodeCallback = null)
+	{
+		$items = new CActiveDataProvider(__CLASS__, array(
+			'criteria' => array(
+				'condition' => 'parent_id=:parent_id',
+				'params' => array(
+					':parent_id' => $rootElementId,
+				),
+				'order' => 'path ASC',
+			),
+		));
+
+		if ($items->totalItemCount)
+		{
+			return self::getTreeFromProvider($items, $itemTextNodeCallback);
+		}
+		else
+		{
+			return null;
+		}
 	}
 }
