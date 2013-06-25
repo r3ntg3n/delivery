@@ -55,6 +55,7 @@
 			),
 			array(
 				'empty' => Yii::t('default', 'Select a page'),
+				'name' => 'alternateLink',
 			)
 		); ?>
 	</div>

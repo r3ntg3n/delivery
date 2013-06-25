@@ -29,6 +29,18 @@ class MenuItem extends CActiveRecord
 	const TOP_ITEMS_LEVEL = 1;
 
 	/**
+	 * @static
+	 * @property int max children level to load to menu tree
+	 */
+	static private $maxChildrenLevel = null;
+
+	/**
+	 * @static
+	 * @property string menu item caption rendering template
+	 */
+	static private $itemCaptionTemplate = null;
+
+	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
 	 * @return MenuItem the static model class
@@ -59,6 +71,7 @@ class MenuItem extends CActiveRecord
 			array('caption', 'length', 'max'=>45),
 			array('link', 'length', 'max'=>500),
 			array('path', 'length', 'max'=>255),
+			array('parent_id', 'default', 'value'=>0, 'setOnEmpty'=>true),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
 			array('id, menu_id, lang_id, caption, link, active, parent_id, level, path, access_level', 'safe', 'on'=>'search'),
@@ -171,22 +184,28 @@ class MenuItem extends CActiveRecord
 	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
 	 * @version 1.0.0.1
 	 */
-	public static function getMenuTree(stdClass $params)
+	public static function getMenuTree(array $params)
 	{
-		$menuId = $params->menuId;
-		$itemTextNodeCallback = property_exists($params, 'textNodeCallback') ? $params->textNodeCallback : null;
+		$menuId = isset($params['menu']) ? $params['menu'] : null;
+		if ($menuId === null)
+		{
+			return null;
+		}
+
+		self::$maxChildrenLevel = isset($params['maxLevel']) ? $params['maxLevel'] : MenuItem::TOP_ITEMS_LEVEL;
+		self::$itemCaptionTemplate = isset($params['captionTemplate']) ? $params['captionTemplate'] : null;
 
 		$items = new CActiveDataProvider(__CLASS__, array(
 			'criteria' => array(
 				'order'=>'path ASC',
-				'condition' => 'menu_id =:menu_id && level=:level',
+				'condition' => 'menu_id =:menu_id && level<=:level',
 				'params' => array(
 					':menu_id' => $menuId,
-					':level' => MenuItem::TOP_ITEMS_LEVEL,
+					':level' => self::$maxChildrenLevel,
 				),
 			),
 		));
-		$tree = self::getTreeFromProvider($items, $itemTextNodeCallback);
+		$tree = self::getTreeFromProvider($items, $params);
 		return $tree;
 	}
 
@@ -194,36 +213,70 @@ class MenuItem extends CActiveRecord
 	 * Builds an items tree from CActiveDataProvider instance
 	 * @static
 	 * @param CActiveDataProvider object
-	 * @param callable a callback to generate text node
 	 * @return array menu items tree from provider's data
 	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
 	 * @version 1.0.0.1
 	 */
-	private static function getTreeFromProvider(CActiveDataProvider $items, $itemTextNodeCallback = null)
+	private static function getTreeFromProvider(CActiveDataProvider &$items)
 	{
 		$tree = array();
 
 		foreach($items->getData() as $item)
 		{
-			$tree[] = array(
+			$node = array(
 				'id' => "MenuItem_{$item->id}",
-				'text' => ($itemTextNodeCallback !== null) ? call_user_func($itemTextNodeCallback, $item) : $item->caption,
-				'children' => self::getChildren($item->id, $itemTextNodeCallback),
+				'text' => (self::$itemCaptionTemplate !== null) ? self::buildItemCaptionByTemplate($item) : $item->caption,
 			);
+
+			if ($item->level < self::$maxChildrenLevel)
+			{
+				$children = self::getChildren($item->id);
+			}
+			else
+			{
+				$children = null;
+			}
+			$node['children'] = $children;
+			$tree[] = $node;
 		}
 		return $tree;
+	}
+
+	private static function buildItemCaptionByTemplate(MenuItem &$item)
+	{
+		$caption = preg_replace_callback('%(?:{(\w+)})%', function($matches) use (&$item)
+		{
+			if ($matches[1] == 'caption')
+			{
+				return $item->caption;
+			}
+
+			switch ($matches[1])
+			{
+			case 'link':
+				$label = $item->caption;
+				$url = $item->link;
+				break;
+			default:
+				$label = ($matches[1] == 'view') ? $item->caption : Yii::t('default', ucfirst($matches[1]));
+				$url = Yii::app()->createUrl('menuItem/' . $matches[1], array('id' => $item->id));
+				break;
+			}
+			return CHtml::link($label, $url);
+		}, self::$itemCaptionTemplate);
+
+		return $caption;
 	}
 
 	/**
 	 * Returns child items for specified element
 	 * @static
 	 * @param integet root element's Id
-	 * @param callable a callback to generate text node
 	 * @return array of children or null if nothing found
 	 * @author Ievgenii Dytyniuk <i.dytyniuk@gmail.com>
 	 * @version 1.0.0.1
 	 */
-	public static function getChildren($rootElementId, $itemTextNodeCallback = null)
+	public static function getChildren($rootElementId)
 	{
 		$items = new CActiveDataProvider(__CLASS__, array(
 			'criteria' => array(
@@ -237,7 +290,7 @@ class MenuItem extends CActiveRecord
 
 		if ($items->totalItemCount)
 		{
-			return self::getTreeFromProvider($items, $itemTextNodeCallback);
+			return self::getTreeFromProvider($items);
 		}
 		else
 		{

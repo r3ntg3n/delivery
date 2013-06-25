@@ -76,7 +76,7 @@ class MenuItemController extends Controller
 	{
 		$model=new MenuItem;
 		$this->prepareModel($model);
-		$parentItemId = $model->parent_id;
+		$parentItemId = (int)$model->parent_id;
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -84,17 +84,24 @@ class MenuItemController extends Controller
 		if(isset($_POST['MenuItem']))
 		{
 			$model->attributes=$_POST['MenuItem'];
-			if ($parentItemId && ($model->parent_id !== $parentItemId))
+			if (!empty($_POST['alternateLink']))
 			{
-				$parent = MenuItem::model()->findByPk($model->parent_id);
-				$model->level = ++$parent->level;
-				$model->path = $parent->path;
+				$model->link = $_POST['alternateLink'];
 			}
-			if($model->save())
+			if ($model->validate())
 			{
-				$model->path .= (($model->level > 1) ? '/' : '') . $model->id;
-				$model->save();
-				$this->redirect(array('view','id'=>$model->id));
+				if ($model->parent_id !== $parentItemId)
+				{
+					$parent = MenuItem::model()->findByPk($model->parent_id);
+					$model->level = ++$parent->level;
+					$model->path = $parent->path;
+				}
+				if($model->save(false))
+				{
+					$model->path .= (($model->level > 1) ? '/' : '') . $model->id;
+					$model->save();
+					$this->redirect(array('view','id'=>$model->id));
+				}
 			}
 		}
 
@@ -111,7 +118,6 @@ class MenuItemController extends Controller
 	public function actionUpdate($id)
 	{
 		$model=$this->loadModel($id);
-		$parentItemId = $model->parent_id;
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
@@ -119,14 +125,21 @@ class MenuItemController extends Controller
 		if(isset($_POST['MenuItem']))
 		{
 			$model->attributes=$_POST['MenuItem'];
-			if ($model->parent_id !== $parentItemId)
+			if (!empty($_POST['alternateLink']))
 			{
-				$parent = MenuItem::model()->findByPk($model->parent_id);
-				$model->path = "{$parent->path}/{$model->id}";
-				$model->level = ++$parent->level;
+				$model->link = $_POST['alternateLink'];
 			}
-			if($model->save())
-				$this->redirect(array('view','id'=>$model->id));
+			if($model->validate())
+			{
+				if ($model->parent_id)
+				{
+					$parent = MenuItem::model()->findByPk($model->parent_id);
+					$model->path = "{$parent->path}/{$model->id}";
+					$model->level = ++$parent->level;
+				}
+				if($model->save(false))
+					$this->redirect(array('view','id'=>$model->id));
+			}
 		}
 
 		$this->render('update',array(
